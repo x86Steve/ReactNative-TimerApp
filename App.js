@@ -1,5 +1,6 @@
 import React from 'react';
 import {Dimensions, StatusBar, StyleSheet, Text, TouchableOpacity, View, Picker, Platform} from 'react-native';
+import Sound from 'react-native-sound';
 
 const screen = Dimensions.get('window');
 
@@ -32,6 +33,13 @@ const timerFinishedNaturally = () =>
 
 const AVAILABLE_MINUTES = createArray(100);
 const AVAILABLE_SECONDS = createArray(60);
+
+// Enable playback in silence mode
+Sound.setCategory('Playback');
+
+// Load the sound file 'whoosh.mp3' from the app bundle
+// See notes below about preloading sounds within initialization code below.
+const alertSound = new Sound('alert.mp3', Sound.MAIN_BUNDLE);
 
 export default class App extends React.Component
 {
@@ -99,10 +107,12 @@ export default class App extends React.Component
         );
     };
 
-    renderTimerFinished = () =>
+    renderTimerFinished = (soundFile) =>
     {
         if (this.state.finishedNaturally)
         {
+            soundFile.setNumberOfLoops(-1);
+            soundFile.play();
             return (
                 <View style={styles.container}>
                     <Text style={[styles.buttonText, styles.buttonTextStop]}>Timer Finished!</Text>
@@ -139,6 +149,7 @@ export default class App extends React.Component
                     this.setState({
                         finishedNaturally: false,
                     });
+                    alertSound.stop();
                 }}>
                     <Text style={[styles.buttonText, styles.buttonText]}> Thanks! </Text>
                 </TouchableOpacity>
@@ -237,7 +248,7 @@ export default class App extends React.Component
             <View style={styles.container}>
                 <StatusBar barStyle={'light-content'}/>
                 {
-                    this.renderTimerFinished()
+                    this.renderTimerFinished(alertSound)
                 }
                 {
                     this.renderPickers()
@@ -320,4 +331,3 @@ const styles = StyleSheet.create({
             },
     },
 );
-;
